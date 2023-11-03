@@ -1,13 +1,12 @@
 package com.mjzhud.util;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author : mjzhud
@@ -41,37 +40,54 @@ public class SqlAddTableUser {
                 keyValue[1] = keyValue[1].trim();
                 switch (keyValue[0]) {
                     case "user":
-                        user = keyValue[1] + ".";
+                        user = keyValue[1];
                         break;
                     case "filePath":
-                        filePath = keyValue[1].replace("\\","/");
+                        filePath = keyValue[1];
                         break;
                 }
             }
         }
+        Scanner sc = new Scanner(System.in);
+        // 获取键盘输入的字符串
+        while(StringUtils.isBlank(user)) {
+            System.out.println("不能直接获取到[用户],请输入：");
+            user = sc.next();
+            System.out.println("用户："+user+"\n");
+        }
+        user += ".";
+        while(StringUtils.isBlank(filePath)) {
+            System.out.println("不能直接获取到[文件路径],请输入：");
+            filePath = sc.next();
+            System.out.println("文件路径："+filePath+"\n");
+        }
+        filePath = filePath.replace("\\","/");
+
         try {
             sqlBuffer = MyFileUtils.readFileContentJointSpaceOneLine(filePath);
+            String sql = sqlBuffer.toString().toLowerCase(Locale.ROOT);
+            sql = sql.replaceAll("\\s+", " ");
+
+            String[] sqlArr = sql.split(";");
+
+            for (int i = 0;i< sqlArr.length;i++) {
+                sql = sqlArr[i];
+                if (sql.contains("select") && sql.contains("from")) {
+                    try {
+                        sumResultBuffer.append(addSqlUser(sql)).append(";\n\n");
+                    } catch (Exception e) {
+                        sumResultBuffer.append(e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }
         } catch (IOException e) {
+            sumResultBuffer.append(e.getMessage());
             e.printStackTrace();
         }
 
         /*---------------------------------------------------------------------------------------------------------*/
-        String sql = sqlBuffer.toString().toLowerCase(Locale.ROOT);
-        sql = sql.replaceAll("\\s+", " ");
 
-        String[] sqlArr = sql.split(";");
-
-        for (int i = 0;i< sqlArr.length;i++) {
-            sql = sqlArr[i];
-            if (sql.contains("select") && sql.contains("from")) {
-                try {
-                    sumResultBuffer.append(addSqlUser(sql)).append(";\n\n");
-                } catch (Exception e) {
-                    sumResultBuffer.append(e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-        }
         try {
             int fileIndex = filePath.lastIndexOf("/");
             int pointIndex = filePath.lastIndexOf(".");
