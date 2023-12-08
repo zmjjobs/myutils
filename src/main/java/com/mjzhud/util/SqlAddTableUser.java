@@ -12,7 +12,7 @@ import java.util.*;
  * @Author : mjzhud
  * @create 2023/10/24 15:30
  * @desc SQL因为场景原因需要把用户加上才能查询
- * utilNum=1 user=GFCLTEST20231016 filePath=C:/Users/mjzhud/Desktop/abc.sql
+ * utilNum=2 user=GFCLTEST20231016 filePath=C:\Users\issuser\Desktop\fsdownload/test.sql
  */
 public class SqlAddTableUser {
     public static final String select = "select ";//select
@@ -32,20 +32,18 @@ public class SqlAddTableUser {
     public static StringBuffer sumResultBuffer = new StringBuffer();
     public static void main(String[] args) {
 
-        if (args != null) {
-            for(int i = 0; i < args.length; i++) {
-                String keyValue[] = args[i].split("=");
-                if (keyValue.length != 2) continue;
-                keyValue[0] = keyValue[0].trim();
-                keyValue[1] = keyValue[1].trim();
-                switch (keyValue[0]) {
-                    case "user":
-                        user = keyValue[1];
-                        break;
-                    case "filePath":
-                        filePath = keyValue[1];
-                        break;
-                }
+        for(int i = 0; i < args.length; i++) {
+            String keyValue[] = args[i].split("=");
+            if (keyValue.length != 2) continue;
+            keyValue[0] = keyValue[0].trim();
+            keyValue[1] = keyValue[1].trim();
+            switch (keyValue[0]) {
+                case "user":
+                    user = keyValue[1];
+                    break;
+                case "filePath":
+                    filePath = keyValue[1];
+                    break;
             }
         }
         Scanner sc = new Scanner(System.in);
@@ -94,14 +92,8 @@ public class SqlAddTableUser {
             String fileParentPath = filePath.substring(0,fileIndex);
             String fileName = filePath.substring(fileIndex,pointIndex);
             String fileType = filePath.substring(pointIndex);
-            filePath = fileParentPath + fileName+"_"+nowDateTime()+fileType;
-            File logFile = new File(filePath);
-            if (!logFile.exists()) {
-                logFile.createNewFile();
-            }
-            print2File(sumResultBuffer,logFile);
-            //用记事本打开文件
-            Process p = Runtime.getRuntime().exec( "notepad.exe " +filePath);
+            filePath = fileParentPath + fileName+"_"+DateUtils.nowDateTime()+fileType;
+            MyFileUtils.print2File(sumResultBuffer,filePath,true);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -219,20 +211,5 @@ public class SqlAddTableUser {
         }
         return resultBuffer;
     }
-
-    private static void print2File(StringBuffer buffer, File logFile) throws IOException {
-        PrintStream ps = new PrintStream(logFile);
-        System.setOut(ps);
-        if (buffer != null && buffer.length() > 0) {
-            System.out.print(buffer.toString());
-        }
-        ps.close();
-    }
-
-    private static String nowDateTime(){
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-		Calendar calendar = Calendar.getInstance();
-		return formatter.format(calendar.getTime());
-	}
 
 }

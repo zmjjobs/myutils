@@ -18,13 +18,12 @@ import java.util.Set;
  * @desc 通过文件列表路径将文件copy出来
  *
  * newSystem:
- * workSpacePath=D:\ideaWorkSpace\HaiNanNongKen\branches\newidms changeFileListPath=C:\Users\mjzhud\Desktop\改动文件列表.txt fileOutputPath=D:\MyOutputFile needJavaFile=false classSrcRoot=/out/production/#ModuleName# javaSrcRoot=/src/main/java classOutputRoot=/WEB-INF/classes
+ *  utilNum=1 workSpacePath=D:\ideaWorkSpace\HaiNanNongKen\branches\newidms changeFileListPath=C:\Users\mjzhud\Desktop\改动文件列表.txt fileOutputPath=D:\MyOutputFile needJavaFile=false classSrcRoot=/out/production/#ModuleName# javaSrcRoot=/src/main/java classOutputRoot=/WEB-INF/classes
  *
  * oldSystem:
- * workSpacePath=D:\eclipseWorkSpace\TYong\HeXinYunWei20230707 changeFileListPath=C:\Users\mjzhud\Desktop\改动文件列表.txt fileOutputPath=D:\MyOutputFile needJavaFile=true javaSrcRoot=/src classOutputRoot=/classes classSrcRoot=/#ModuleName#/classes
+ * workSpacePath=D:\EclipseSpace\Tyong\Trunk changeFileListPath=C:\Users\issuser\Desktop\改动文件列表.txt fileOutputPath=D:\MyOutputFile needJavaFile=true javaSrcRoot=/src classOutputRoot=/classes classSrcRoot=/#ModuleName#/classes utilNum=1
  */
 public class CopyFileByPathUtils {
-	//private static final Log logger = LogFactory.getLog(CopyFileByPathUtils.class);
 	/**
 	 * 存放改动文件列表的文件路径
 	 * 文件的字符编码要与工程相同
@@ -54,7 +53,6 @@ public class CopyFileByPathUtils {
 
 	public static void main(String[] args) {
 		try {
-			System.out.println("本系统用于抽取文件补丁，如有问题请联系mjzhud@isoftstone.com\n");
 			defineVariable(args);
 			copyFileByPaths();
 		} catch (Exception e) {
@@ -64,42 +62,40 @@ public class CopyFileByPathUtils {
 
 	public static void defineVariable(String[] args) throws Exception {
 		boolean hasNeedJavaFileField = false;
-		if (args != null) {
-			for(int i = 0; i < args.length; i++){
-				String keyValue[] = args[i].split("=");
-				if (keyValue.length != 2) continue;
-				keyValue[0] = keyValue[0].trim();
-				keyValue[1] = keyValue[1].trim();
-				switch (keyValue[0]) {
-					case "workSpacePath":
-						workSpacePath = keyValue[1];
-						break;
-					case "changeFileListPath":
-						changeFileListPath = keyValue[1];
-						break;
-					case "fileOutputPath":
-						fileOutputPath = keyValue[1];
-						break;
-					case "webappSrcRoot":
-						webappSrcRoot = keyValue[1];
-						break;
-					case "classSrcRoot":
-						classSrcRoot = keyValue[1];
-						break;
-					case "javaSrcRoot":
-						javaSrcRoot = keyValue[1];
-						break;
-					case "resourcesSrcRoot":
-						resourcesSrcRoot = keyValue[1];
-						break;
-					case "classOutputRoot":
-						classOutputRoot = keyValue[1];
-						break;
-					case "needJavaFile":
-						isNeedJavaFile = keyValue[1].equalsIgnoreCase("true");
-						hasNeedJavaFileField = true;
-						break;
-				}
+		for(int i = 0; i < args.length; i++){
+			String keyValue[] = args[i].split("=");
+			if (keyValue.length != 2) continue;
+			keyValue[0] = keyValue[0].trim();
+			keyValue[1] = keyValue[1].trim();
+			switch (keyValue[0]) {
+				case "workSpacePath":
+					workSpacePath = keyValue[1];
+					break;
+				case "changeFileListPath":
+					changeFileListPath = keyValue[1];
+					break;
+				case "fileOutputPath":
+					fileOutputPath = keyValue[1];
+					break;
+				case "webappSrcRoot":
+					webappSrcRoot = keyValue[1];
+					break;
+				case "classSrcRoot":
+					classSrcRoot = keyValue[1];
+					break;
+				case "javaSrcRoot":
+					javaSrcRoot = keyValue[1];
+					break;
+				case "resourcesSrcRoot":
+					resourcesSrcRoot = keyValue[1];
+					break;
+				case "classOutputRoot":
+					classOutputRoot = keyValue[1];
+					break;
+				case "needJavaFile":
+					isNeedJavaFile = keyValue[1].equalsIgnoreCase("true");
+					hasNeedJavaFileField = true;
+					break;
 			}
 		}
 		if (StringUtils.isBlank(javaSrcRoot)) {
@@ -194,12 +190,6 @@ public class CopyFileByPathUtils {
 		return str;
 	}
 
-	/*private static String nowDateTime(){
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-		Calendar calendar = Calendar.getInstance();
-		return formatter.format(calendar.getTime());
-	}*/
-
 	private static void copyFileByPaths() {
 		StringBuilder successPath = new StringBuilder();
 		StringBuilder failPath = new StringBuilder();
@@ -241,9 +231,13 @@ public class CopyFileByPathUtils {
 					e.printStackTrace();
 				}
 			}
-			printLog2File(successPath, failPath);
-			//用记事本打开文件
-			Process p = Runtime.getRuntime().exec( "notepad.exe " + fileOutputPath + "/url.txt");
+			StringBuffer sumBuffer = new StringBuffer();
+			sumBuffer.append(successPath);
+			if (failPath.length() > 0) {
+				sumBuffer.append("\n--------------下面的为--- 失败列表:--------------------------------:\n")
+						.append(failPath);
+			}
+			MyFileUtils.print2File(sumBuffer,fileOutputPath + "/url.txt",true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -269,31 +263,4 @@ public class CopyFileByPathUtils {
 			}
 		}
 	}
-
-	/**
-	 * 打印日志到文件中
-	 * @param successPath  所有成功列表路径
-	 * @param failPath 所有失败列表路径
-	 * @throws FileNotFoundException
-	 */
-	private static void printLog2File(StringBuilder successPath, StringBuilder failPath) throws IOException {
-		File logFile = new File(fileOutputPath + "/url.txt");
-		if (!logFile.exists()) {
-			logFile.createNewFile();
-		}
-		PrintStream ps = new PrintStream(logFile);
-		System.setOut(ps);
-		if (successPath != null && successPath.length() > 0) {
-			System.out.print(successPath.toString());
-			System.out.println();
-		}
-		if (failPath != null && failPath.length() > 0) {
-			System.out.println();
-			System.out.println("--------------下面的为--- 失败列表:--------------------------------:");
-			System.out.print(failPath.toString());
-			System.out.println();
-		}
-		ps.close();
-	}
-
 }
